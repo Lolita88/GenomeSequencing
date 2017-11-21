@@ -12,7 +12,7 @@ def de_bruijn_graph_from_kmers(kmers):
             else: # write anew
                 adjacency_list[pre] = pre + " -> " + suf
     return adjacency_list.values()
-"""
+
 kmers = [
     "GAGG",
     "CAGG",
@@ -22,8 +22,8 @@ kmers = [
     "AGGG",
     "GGAG"
 ]
-"""
-kmers = [line.strip() for line in open("files/dataset_200_8.txt")]
+
+#kmers = [line.strip() for line in open("files/dataset_200_8.txt")]
 #print(kmers)
 
 print('\n'.join(de_bruijn_graph_from_kmers(kmers)))
