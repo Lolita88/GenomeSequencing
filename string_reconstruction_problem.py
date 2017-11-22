@@ -1,10 +1,13 @@
 # genomePath(EulerianPath(DeBruijnGraph(kmers)))
+# This code takes k length and list of kmers, creates a DeBruijn graph from them (Define DeBruijn here).
+# Then, with the DeBruijn data, find a Eulerian path and stitch that into a genome path. 
 from copy import deepcopy
 from random import randint
 import random
 
 def string_reconstruction_problem(k, kmers):
-    find_eulerian_cycle(de_bruijn_graph_from_kmers(kmers))
+    #change this, it's bad format, duh
+    return genome_path_from_eulerian_path(find_eulerian_cycle(de_bruijn_graph_from_kmers(kmers)))
 
 def de_bruijn_graph_from_kmers(kmers):
     adjacency_list = {}
@@ -19,7 +22,6 @@ def de_bruijn_graph_from_kmers(kmers):
                 adjacency_list[pre] += ("," + suf)
             else: # write anew
                 adjacency_list[pre] = pre + " -> " + suf
-    print(adjacency_list.values())
     return adjacency_list.values()
 
 def create_adjacency_list(my_list):
@@ -34,6 +36,7 @@ def create_adjacency_list(my_list):
         for num in node[1].split(','): #num gets assigned the end node of the pair. Split on comma needed when multiple end nodes
             adj_list[node[0]].append(num)
             circuit_max += 1
+    #print(adj_list)
     return adj_list, circuit_max
 
 #Find start/end nodes
@@ -74,14 +77,14 @@ def find_start_end_nodes(red_adj_list):
 def find_eulerian_cycle(my_list):
     #create adj my_list
     adj_list, circuit_max = create_adjacency_list(my_list)
-
+    
     #reduced adj my_list to keep track of traveled edges
     red_adj_list = {}
     red_adj_list = deepcopy(adj_list) #exact copy of dict
    
     #Find start node (graph must be directed/ubalanced)
     red_adj_list, start_node = find_start_end_nodes(red_adj_list)
-   
+
     start = start_node
     curr_vert = start_node
     path = [curr_vert]
@@ -105,6 +108,15 @@ def find_eulerian_cycle(my_list):
         path += (vert + '->')
     return path.strip('->')
 
+def genome_path_from_eulerian_path(eulerian_path):
+    # takes in something like this GGC->GCT->CTT->TTA->TAC->ACC->CCA
+    # returns a genome sequence like this GGCTTACCA
+    kmers = eulerian_path.split("->")
+    genome = ""
+    for i in range(len(kmers)):
+        genome = genome[:i] + kmers[i]
+    return genome
+"""    
 k = 4
 kmers = [
     "CTTA",
@@ -114,5 +126,9 @@ kmers = [
     "GCTT",
     "TTAC"
 ]
+"""
+data = [line.strip() for line in open("files/string_reconstruction_problem.txt")]
+k = data[0]
+kmers = data[1:]
 
 print(string_reconstruction_problem(k, kmers))
