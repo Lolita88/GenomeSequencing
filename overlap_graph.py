@@ -15,7 +15,7 @@ def overlap_graph(kmers):
                 patterns.append(suffix_patterns[suf] + " -> " + prefix_patterns[pre])
     return patterns
 
-"""
+
 kmers = [
 "ATGCG",
 "GCATG",
@@ -23,7 +23,12 @@ kmers = [
 "AGGCA",
 "GGCAT"
 ]
-""" 
-kmers = [line.strip() for line in open("files/dataset_198_10.txt")]
+"""sample output:
+CATGC -> ATGCG
+GCATG -> CATGC
+GGCAT -> GCATG
+AGGCA -> GGCAT
+"""
+#kmers = [line.strip() for line in open("files/dataset_198_10.txt")]
 #print(overlap_graph(kmers))
 print('\n'.join(overlap_graph(kmers)))
