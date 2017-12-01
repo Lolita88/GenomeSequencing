@@ -1,6 +1,6 @@
 # genomePath(EulerianPath(DeBruijnGraph(kmers)))
-# This code takes k length and list of kmers, creates a DeBruijn graph from them (Define DeBruijn here).
-# Then, with the DeBruijn data, find a Eulerian path and stitch that into a genome path. 
+# This code takes an int k and list of kmers, creates a DeBruijn graph from them (Define DeBruijn here).
+# Then, with the DeBruijn data, find a Eulerian path and stitch that together to form a genome path. 
 from copy import deepcopy
 from random import randint
 import random
@@ -36,7 +36,7 @@ def create_adjacency_list(my_list):
         for num in node[1].split(','): #num gets assigned the end node of the pair. Split on comma needed when multiple end nodes
             adj_list[node[0]].append(num)
             circuit_max += 1
-    #print(adj_list)
+    print(adj_list)
     return adj_list, circuit_max
 
 #Find start/end nodes
@@ -106,6 +106,7 @@ def find_eulerian_cycle(my_list):
     path = start + '->'
     for vert in circuit[::-1]:
         path += (vert + '->')
+    #print(path.strip('->'))
     return path.strip('->')
 
 def genome_path_from_eulerian_path(eulerian_path):
@@ -116,7 +117,7 @@ def genome_path_from_eulerian_path(eulerian_path):
     for i in range(len(kmers)):
         genome = genome[:i] + kmers[i]
     return genome
-"""    
+   
 k = 4
 kmers = [
     "CTTA",
@@ -126,9 +127,9 @@ kmers = [
     "GCTT",
     "TTAC"
 ]
-"""
-data = [line.strip() for line in open("files/string_reconstruction_problem.txt")]
-k = data[0]
-kmers = data[1:]
+
+#data = [line.strip() for line in open("files/string_reconstruction_problem.txt")]
+#k = data[0]
+#kmers = data[1:]
 
 print(string_reconstruction_problem(k, kmers))
