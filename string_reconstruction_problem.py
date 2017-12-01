@@ -106,8 +106,7 @@ def find_eulerian_cycle(my_list):
     path = start + '->'
     for vert in circuit[::-1]:
         path += (vert + '->')
-    #print(path.strip('->'))
-    return path.strip('->')
+    return path
 
 def genome_path_from_eulerian_path(eulerian_path):
     # takes in something like this GGC->GCT->CTT->TTA->TAC->ACC->CCA
