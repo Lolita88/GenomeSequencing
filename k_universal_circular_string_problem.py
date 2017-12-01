@@ -23,7 +23,6 @@ def k_universal_circular_string_problem(k):
     binary_list = []
     for each in lst:
         binary_list.append(''.join(map(str, each)))
-    #print(binary_list)
     de_bruijn = de_bruijn_graph_from_kmers(binary_list)
     eulerian = find_eulerian_cycle(de_bruijn)
     genome = genome_path_from_eulerian_path(eulerian)
@@ -41,27 +40,12 @@ def de_bruijn_graph_from_kmers(kmers):
                 adjacency_list[pre] += ("," + suf)
             else: # write anew
                 adjacency_list[pre] = pre + " -> " + suf
-    print(adjacency_list.values())
     return adjacency_list.values()
-
-def create_adjacency_my_list(my_list):
-    adj_list = {}
-    circuit_max = 0
-    for line in my_list:
-        node = line.strip('\n')
-        node = node.replace(' -> ', ' ')
-        node = node.split(' ')
-        adj_list.setdefault(node[0],[]) #adj my_list gets the start of the node pair(ie. first num)
-        for num in node[1].split(','): #num gets assigned the end node of the pair. Split on comma needed when multiple end nodes
-            adj_list[node[0]].append(num)
-            circuit_max += 1
-    return adj_list, circuit_max
 
 def find_eulerian_cycle(my_list):
     #create adj my_list - key/value pairs
     # keys are the pre, values are the sufs they can point to
     adj_list, circuit_max = create_adjacency_my_list(my_list)
-
     #reduced adj my_list to keep track of traveled edges
     red_adj_list = {}
     red_adj_list = deepcopy(adj_list) #exact copy of dict
@@ -82,32 +66,37 @@ def find_eulerian_cycle(my_list):
         else:
             circuit.append(curr_vert)
             curr_vert = stack[len(stack)-1]
-            #stack.pop()
-    """print(len(circuit))
-    circuit.pop(0)
-    print(len(circuit))"""
-    print(circuit)
+            stack.pop()
+    
     #formatting
     path = start + '->'
     path = ""
-    for vert in circuit[:0:-1]: # changing this from [::-1] fixed the error of having 
-        # the start node repeated at the end - due to cycle. [:-1] leaves off last element
+    for vert in circuit[::-1]: 
         path += (vert + '->')
-    #print(path.strip())
+    return path
 
-    return path.strip('->')
-    #genome_path_from_eulerian_path(path.strip('->'))
+def create_adjacency_my_list(my_list):
+    adj_list = {}
+    circuit_max = 0
+    for line in my_list:
+        node = line.strip('\n')
+        node = node.replace(' -> ', ' ')
+        node = node.split(' ')
+        adj_list.setdefault(node[0],[]) #adj my_list gets the start of the node pair(ie. first num)
+        for num in node[1].split(','): #num gets assigned the end node of the pair. Split on comma needed when multiple end nodes
+            adj_list[node[0]].append(num)
+            circuit_max += 1
+    return adj_list, circuit_max
 
 def genome_path_from_eulerian_path(eulerian_path):
     # takes in something like this GGC->GCT->CTT->TTA->TAC->ACC->CCA
     # returns a genome sequence like this GGCTTACCA
-    print(eulerian_path)
     kmers = eulerian_path.split("->")
     genome = ""
     for i in range(len(kmers)):
         genome = genome[:i] + kmers[i]
     return genome
 
-k = 3
+k = 4
 print(k_universal_circular_string_problem(k))
 # sample output for binary 4mer: 0000110010111101
