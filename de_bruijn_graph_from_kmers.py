@@ -22,7 +22,13 @@ kmers = [
     "AGGG",
     "GGAG"
 ]
-
+"""sample output:
+AGG -> GGG
+GAG -> AGG
+GGG -> GGA,GGG
+CAG -> AGG,AGG
+GGA -> GAG
+"""
 #kmers = [line.strip() for line in open("files/dataset_200_8.txt")]
 #print(kmers)
 
