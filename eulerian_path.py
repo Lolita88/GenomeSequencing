@@ -98,6 +98,7 @@ my_list = [
      "8 -> 9",
      "9 -> 6"]
 
+# ex output: 6->7->8->9->6->3->0->2->1->3->4
 #my_list = open('files/eulerian_path.txt', 'r')
 
 print(find_eulerian_cycle(my_list))
