@@ -1,3 +1,5 @@
+# De Bruijn graphs split kmers into prefixs and suffixes and link the possible paths
+
 def de_bruijn_graph_from_kmers(kmers):
     adjacency_list = {}
     kmers.sort()
@@ -5,6 +7,7 @@ def de_bruijn_graph_from_kmers(kmers):
     for i in range(len(kmers)):
         pre = kmers[i][0:-1]
         suf = kmers[i][1:]
+        print(pre[1:])
         if(pre[1:] == suf[:-1]):
             #add to dict for output
             if pre in adjacency_list.keys(): # if already there, append
