@@ -15,8 +15,9 @@ def string_reconstruction_from_read_pairs(k, d, kmer_pairs):
     #print(de_bruijn)
     eulerian = find_eulerian_cycle(de_bruijn)
     genome = genome_path_from_eulerian_path(k, d, eulerian)
-    print('\n')
-    print(genome)
+    #print('\n')
+    #print(genome)
+    return genome
 
 def find_eulerian_cycle(my_list):
     #create adj my_list
@@ -121,36 +122,41 @@ def paired_de_bruijn_graph_from_kmers(k, d, kmer_pairs): # don't need d or k
     for i in range(len(kmer_pairs)):
         temp_pair1, temp_pair2 = kmer_pairs[i].split("|")
         # is a pre/suf always one less than the full kmer????
-        print("temp_pair1 " + str(temp_pair1))
-        print("temp_pair2 " + str(temp_pair2))
-        pre_nodes = temp_pair1[0:-1] + "|" + temp_pair2[0:-1]
-        suf_nodes = temp_pair1[1:] + "|" + temp_pair2[1:]
+        #print("temp_pair1 " + str(temp_pair1))
+        #print("temp_pair2 " + str(temp_pair2))
         
-        print("pre_nodes " + str(pre_nodes))
-        print("suf_nodes " + str(suf_nodes))
-        
-        #print(pre_nodes[1:k])
-        print(str(pre_nodes[1:k-2])) + " " + str(suf_nodes[0:2]))
-        #print(str(suf_nodes[0:k-d]) + " " + str(suf_nodes[-k+1:-1]))
+        pre_node1 = temp_pair1[0:-1]
+        pre_node2 = temp_pair2[0:-1]
+        suf_node1 = temp_pair1[1:]
+        suf_node2 = temp_pair2[1:]
+        #print("pre_node1 " + pre_node1)
+        #print("suf_node1 " + suf_node1)
+        #print("pre_node2 " + pre_node2)
+        #print("suf_node2 " + suf_node2)
+        pre_nodes = pre_node1 + "|" + pre_node2
+        suf_nodes = suf_node1 + "|" + suf_node2
+ 
+        #print("pre and suf nodes1 " + str(pre_node1[1:]) + " " + str(suf_node1[0:-1]))
+        #print("pre and suf nodes2 " + str(pre_node2[1:]) + " " + str(suf_node2[0:-1]))
         #print("\n")        
         
         #if((pre_nodes[1:k-1] == suf_pair[0:k-1]) and (pre_nodes[-d:] == suf_pair[-k+1:-1])):
-        if((pre_nodes[1:k-d+1] == suf_nodes[0:k-d]) and (pre_nodes[-d:] == suf_nodes[-k+1:-1])):
+        if((pre_node1[1:] == suf_node1[0:-1]) and (pre_node2[1:] == suf_node2[0:-1])):
             #add to dict for output
             if pre_nodes in adjacency_list.keys(): # if already there, append
                 adjacency_list[pre_nodes] += ("," + suf_nodes)
             else: # write anew
                 adjacency_list[pre_nodes] = pre_nodes + " -> " + suf_nodes
-    print("adjacency_list.values " + str(adjacency_list.values()))
+    #print("adjacency_list.values " + str(adjacency_list.values()))
     return adjacency_list.values()
 
 def genome_path_from_eulerian_path(k, d, eulerian_path):
     # takes in something like this:
     # GTG|GTG->TGG|TGA->GGT|GAG->GTC|AGA->TCG|GAT->CGT|ATG->GTG|TGT->TGA|GTT->GAG|TTG->AGA|TGA
     # returns a genome sequence like this GTGGTCGTGAGATGTTGA
-    print(eulerian_path)
+    #print(eulerian_path)
     kmers = eulerian_path.split("->")
-    print(kmers)
+    #print(kmers)
     pre_string = ""
     suf_string = ""
     genome = ""
@@ -159,28 +165,18 @@ def genome_path_from_eulerian_path(k, d, eulerian_path):
         #print("pre " + pre[0])
         #print("suf " + suf[0])
         pre_string = pre_string + pre[0]
-        suf_string = suf_string + suf[2]
-        """
+        #suf_string = suf_string + suf[2]
+        suf_string = suf_string + suf[0]
         if(i == len(kmers)-1): # if at end of suf_string, need to bring down the last chars
-            suf_string = suf_string + suf
-        else:
-            suf_string = suf_string + suf[2]"""
-    print(pre_string)
-    print(suf_string)
-    genome = pre_string + suf_string[d:]
-    print("genome is " + genome)
-    print("should be GTGGTCGTGAGATGTTGA")
+            suf_string = suf_string + suf[1:]
+    #print("pre_string " + str(pre_string))
+    #print("suf_string " + str(suf_string))
+    #genome = pre_string + suf_string[d:]
+    genome = pre_string[0:d+k] + suf_string
+    #print("genome is " + genome)
+    #print("should be GTGGTCGTGAGATGTTGA")
     return genome
-"""
-        FirstPatterns ? the sequence of initial k-mers from GappedPatterns
-        SecondPatterns ? the sequence of terminal k-mers from GappedPatterns
-        PrefixString ? StringSpelledByPatterns(FirstPatterns, k)
-        SuffixString ? StringSpelledByPatterns(SecondPatterns, k)
-        for i = k + d + 1 to |PrefixString|
-            if the i-th symbol in PrefixString does not equal the (i - k - d)-th symbol in SuffixString
-                return "there is no string spelled by the gapped patterns"
-        return PrefixString concatenated with the last k + d symbols of SuffixString
-"""
+    #return "hello"
 
 def hamming_distance(p, q):
     count = 0
@@ -188,7 +184,7 @@ def hamming_distance(p, q):
         if p[i] != q[i]:
             count += 1
     return count
-
+"""
 # sample input
 k = 4
 d = 2
@@ -218,7 +214,7 @@ for line in raw_data:
         break
     else:
         k_pairs.append(line)
-"""
+
 my_answer = string_reconstruction_from_read_pairs(k, d, k_pairs)
 print(my_answer)
 """
