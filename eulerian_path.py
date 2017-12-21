@@ -71,6 +71,7 @@ def find_eulerian_cycle(my_list):
     stack = []
     circuit = []
     while len(circuit) != circuit_max:
+        #print("key " + str(red_adj_list[curr_vert]))
         if red_adj_list[curr_vert] != []: #if neighbor nodes exist
             stack.append(curr_vert)
             pick = randint(0,len(red_adj_list[curr_vert])-1) #what is pick?
@@ -87,7 +88,7 @@ def find_eulerian_cycle(my_list):
     for vert in circuit[::-1]:
         path += (vert + '->')
     return path.strip('->')
-
+"""
 my_list = [
     "0 -> 2",
      "1 -> 3",
@@ -97,6 +98,19 @@ my_list = [
      "7 -> 8",
      "8 -> 9",
      "9 -> 6"]
+"""
+my_list = [
+    "CGT|ATG -> GTG|TGT",
+    "GAG|TTG -> AGA|TGA",
+    "GGT|GAG -> GTC|AGA",
+    "GTC|AGA -> TCG|GAT",
+    "GTG|TGT -> TGA|GTT",
+    "GTG|GTG -> TGG|TGA",
+    "TCG|GAT -> CGT|ATG",
+    "TGA|GTT -> GAG|TTG",
+    "TGG|TGA -> GGT|GAG"
+
+]
 
 # ex output: 6->7->8->9->6->3->0->2->1->3->4
 #my_list = open('files/eulerian_path.txt', 'r')
