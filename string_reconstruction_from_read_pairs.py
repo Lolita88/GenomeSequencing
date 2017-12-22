@@ -10,17 +10,12 @@ from random import randint
 import random
 
 def string_reconstruction_from_read_pairs(k, d, kmer_pairs):
-    #print(kmer_pairs)
-    de_bruijn = paired_de_bruijn_graph_from_kmers(k, d, kmer_pairs)
-    #print(de_bruijn)
+    de_bruijn = paired_de_bruijn_graph_from_kmers(kmer_pairs)
     eulerian = find_eulerian_cycle(de_bruijn)
     genome = genome_path_from_eulerian_path(k, d, eulerian)
-    #print('\n')
-    #print(genome)
     return genome
 
 def find_eulerian_cycle(my_list):
-    #create adj my_list
     adj_list, circuit_max = create_adjacency_list(my_list)
 
     #reduced adj my_list to keep track of traveled edges
@@ -38,8 +33,8 @@ def find_eulerian_cycle(my_list):
     while len(circuit) != circuit_max:
         if red_adj_list[curr_vert] != []: #if neighbor nodes exist
             stack.append(curr_vert)
-            pick = randint(0,len(red_adj_list[curr_vert])-1) #what is pick?
-            temp = deepcopy(curr_vert) #why use deepcopy
+            pick = randint(0,len(red_adj_list[curr_vert])-1) 
+            temp = deepcopy(curr_vert) 
             curr_vert = red_adj_list[temp][pick]
             red_adj_list[temp].remove(curr_vert)
         else:
@@ -59,9 +54,7 @@ def find_eulerian_cycle(my_list):
             path += circuit[i]
         else:
             path += (circuit[i] + '->')
-    #print("path " + str(path))
     return path
-    #print(path.strip('->'))
 
 def create_adjacency_list(my_list):
     #saving my_list into a dictionary
@@ -111,7 +104,7 @@ def find_start_end_nodes(red_adj_list):
     red_adj_list[end_node] = []
     return red_adj_list, start_node
 
-def paired_de_bruijn_graph_from_kmers(k, d, kmer_pairs): # don't need d or k
+def paired_de_bruijn_graph_from_kmers(kmer_pairs): # don't need d or k
     # kmer_pair ex: AAAT|TTTA
     # pre_nodes ex: AAA|TTT
     # suf_nodes ex: AAT|TTA
@@ -121,7 +114,6 @@ def paired_de_bruijn_graph_from_kmers(k, d, kmer_pairs): # don't need d or k
    
     for i in range(len(kmer_pairs)):
         temp_pair1, temp_pair2 = kmer_pairs[i].split("|")
-        # is a pre/suf always one less than the full kmer????
         #print("temp_pair1 " + str(temp_pair1))
         #print("temp_pair2 " + str(temp_pair2))
         
@@ -140,23 +132,24 @@ def paired_de_bruijn_graph_from_kmers(k, d, kmer_pairs): # don't need d or k
         #print("pre and suf nodes2 " + str(pre_node2[1:]) + " " + str(suf_node2[0:-1]))
         #print("\n")        
         
-        #if((pre_nodes[1:k-1] == suf_pair[0:k-1]) and (pre_nodes[-d:] == suf_pair[-k+1:-1])):
         if((pre_node1[1:] == suf_node1[0:-1]) and (pre_node2[1:] == suf_node2[0:-1])):
             #add to dict for output
             if pre_nodes in adjacency_list.keys(): # if already there, append
                 adjacency_list[pre_nodes] += ("," + suf_nodes)
             else: # write anew
                 adjacency_list[pre_nodes] = pre_nodes + " -> " + suf_nodes
-    #print("adjacency_list.values " + str(adjacency_list.values()))
     return adjacency_list.values()
 
 def genome_path_from_eulerian_path(k, d, eulerian_path):
     # takes in something like this:
     # GTG|GTG->TGG|TGA->GGT|GAG->GTC|AGA->TCG|GAT->CGT|ATG->GTG|TGT->TGA|GTT->GAG|TTG->AGA|TGA
-    # returns a genome sequence like this GTGGTCGTGAGATGTTGA
-    #print(eulerian_path)
+    # Splits into pre and suf 
+    # Creates pre and suf strings from first char in pre and suf
+    # These strings will then be overlapped based on d + k to 
+    # return a genome sequence like this GTGGTCGTGAGATGTTGA
+    # Also need to bring down the last chars that aren't included in the suf[0]
+
     kmers = eulerian_path.split("->")
-    #print(kmers)
     pre_string = ""
     suf_string = ""
     genome = ""
@@ -165,18 +158,13 @@ def genome_path_from_eulerian_path(k, d, eulerian_path):
         #print("pre " + pre[0])
         #print("suf " + suf[0])
         pre_string = pre_string + pre[0]
-        #suf_string = suf_string + suf[2]
         suf_string = suf_string + suf[0]
         if(i == len(kmers)-1): # if at end of suf_string, need to bring down the last chars
             suf_string = suf_string + suf[1:]
     #print("pre_string " + str(pre_string))
     #print("suf_string " + str(suf_string))
-    #genome = pre_string + suf_string[d:]
     genome = pre_string[0:d+k] + suf_string
-    #print("genome is " + genome)
-    #print("should be GTGGTCGTGAGATGTTGA")
     return genome
-    #return "hello"
 
 def hamming_distance(p, q):
     count = 0
