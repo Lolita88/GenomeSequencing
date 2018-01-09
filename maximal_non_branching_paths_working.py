@@ -1,23 +1,5 @@
 
 def maximal_non_branching_paths(adjacency_list):
-    """
-    MaximalNonBranchingPaths(adjacency_list)
-        Paths ← empty list
-        for each node v in adjacency_list
-            if v is not a 1-in-1-out node
-                if out(v) > 0
-                    for each outgoing edge (v, w) from v
-                        NonBranchingPath ← the path consisting of the single edge (v, w)
-                        while w is a 1-in-1-out node
-                            extend NonBranchingPath by the outgoing edge (w, u) from w 
-                            w ← u
-                        add NonBranchingPath to the set Paths
-        for each isolated cycle Cycle in adjacency_list
-            add Cycle to Paths
-        return Paths
-    Input: The adjacency list of a adjacency_list whose nodes are integers.
-    Output: The collection of all maximal nonbranching paths in this adjacency_list.    
-    """
     #reformat data from list with pointers "->" to dict
     graph = {}
     for line in adjacency_list:
@@ -46,7 +28,13 @@ def maximal_non_branching_paths(adjacency_list):
             # explore vertex v outgoing branches
             for w in e:
                 paths.append(non_branching_path([v,w], degree, graph))
-    return paths
+    formatted_paths = []
+    for path in paths:
+        row = ""
+        for each in path:
+            row += each + " -> "
+        formatted_paths.append(row[:-4])
+    return formatted_paths
 
 def is_one_in_one_out(vertex, degree):
     deg_in = degree[0].get(vertex,0)
@@ -93,7 +81,7 @@ def in_and_out_degree(graph):
         for kk in value:
             ind[kk] = ind.get(kk,0)+1
     return (ind,outd)
-
+"""
 adjacency_list = [
     "1 -> 2",
     "2 -> 3",
@@ -101,8 +89,11 @@ adjacency_list = [
     "6 -> 7",
     "7 -> 6"
 ]
+"""
+adjacency_list = [line.strip() for line in open("files/maximal_non_branching_paths_data.txt")]
 
-print(maximal_non_branching_paths(adjacency_list))
+print('\n'.join(maximal_non_branching_paths(adjacency_list)))
+#print(maximal_non_branching_paths(adjacency_list))
 """
 sample output:
 1 -> 2 -> 3
