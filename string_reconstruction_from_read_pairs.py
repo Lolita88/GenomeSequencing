@@ -172,7 +172,7 @@ def hamming_distance(p, q):
         if p[i] != q[i]:
             count += 1
     return count
-"""
+
 # sample input
 k = 4
 d = 2
@@ -202,7 +202,7 @@ for line in raw_data:
         break
     else:
         k_pairs.append(line)
-
+"""
 my_answer = string_reconstruction_from_read_pairs(k, d, k_pairs)
 print(my_answer)
 """
