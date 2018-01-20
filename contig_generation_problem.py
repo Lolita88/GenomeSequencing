@@ -1,3 +1,21 @@
+"""
+Contig Generation Problem: Generate the contigs from a collection of reads (with imperfect coverage).
+contigs (long, contiguous segments of the genome) rather than entire chromosomes
+
+The left part of the figure below shows four 10-mer reads that capture some but not all of the 
+10-mers from an example genome. However, if we take the counterintuitive step of breaking these 
+reads into shorter 5-mers (figure below, right), then these 5-mers exhibit perfect coverage. 
+This read breaking approach, in which we break reads into shorter k-mers, is used by many modern 
+assemblers.
+Read breaking must deal with a practical trade-off. On the one hand, the smaller the value of k, 
+the larger the chance that the k-mer coverage is perfect. On the other hand, smaller values of k 
+result in a more tangled de Bruijn graph, making it difficult to infer the genome from this graph.
+
+Input: A collection of k-mers Patterns.
+Output: All contigs in DeBruijn(Patterns).
+"""
+
+import sys
 def contig_generation_problem(kmers):
     """
     Contig Generation Problem: Generate the contigs from a collection of reads (with imperfect coverage).
@@ -139,6 +157,13 @@ kmers = [
 ]
 """
 kmers = [line.strip() for line in open("files/contig_generation_data.txt")]
+
+"""
+#code for stdin/out
+kmers = []
+for line in sys.stdin:
+    kmers.append(line.rstrip())    
+"""
 
 print('\n'.join(contig_generation_problem(kmers)))
 #print(contig_generation_problem(kmers))
