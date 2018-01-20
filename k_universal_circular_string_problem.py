@@ -3,7 +3,7 @@
 # output is 00011101
 from copy import deepcopy
 from random import randint
-import random
+import random, sys
 import itertools
 
 def k_universal_circular_string_problem(k):
@@ -97,6 +97,7 @@ def genome_path_from_eulerian_path(eulerian_path):
         genome = genome[:i] + kmers[i]
     return genome
 
-k = 4
+#k = 4
+k = sys.stdin
 print(k_universal_circular_string_problem(k))
 # sample output for binary 4mer: 0000110010111101
