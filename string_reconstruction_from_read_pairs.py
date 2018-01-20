@@ -5,6 +5,9 @@
 # and then we can reconstruct a string from the "read1" path and another string from 
 # the "read2" path, and we can overlay them because we know d
 
+### may have an error in the code. In one instance, was throwing out multiple
+# strings which did not all seem to work in quiz format, athough passed all grader scenarios
+
 from copy import deepcopy
 from random import randint
 import random
@@ -172,7 +175,7 @@ def hamming_distance(p, q):
         if p[i] != q[i]:
             count += 1
     return count
-
+"""
 # sample input
 k = 4
 d = 2
@@ -188,9 +191,38 @@ k_pairs = [
     "GTCG|AGAT"
 ]
 # sample output: GTGGTCGTGAGATGTTGA
+"""
+k = 3
+d = 1
+k_pairs = [
+    "ACC|ATA",
+    "ACT|ATT",
+    "ATA|TGA",
+    "ATT|TGA",
+    "CAC|GAT",
+    "CCG|TAC",
+    "CGA|ACT",
+    "CTG|AGC",
+    "CTG|TTC",
+    "GAA|CTT",
+    "GAT|CTG",
+    "GAT|CTG",
+    "TAC|GAT",
+    "TCT|AAG",
+    "TGA|GCT",
+    "TGA|TCT",
+    "TTC|GAA"
+]
 
 """
 raw_data = [line.strip() for line in open("files/kmer_pairs_dataset3.txt")]
+
+#code for stdin/out
+raw_data = []
+for line in sys.stdin:
+    raw_data.append(line.rstrip()) #needed rstrip() to fix trailing newlines breaking the tester
+#end code for stdin/out
+
 if(raw_data[0] == "Input"):
     del raw_data[0]
 k, d = map(int, raw_data[0].split(" "))
