@@ -36,7 +36,7 @@ def create_adjacency_list(my_list):
         for num in node[1].split(','): #num gets assigned the end node of the pair. Split on comma needed when multiple end nodes
             adj_list[node[0]].append(num)
             circuit_max += 1
-    print(adj_list)
+    #print(adj_list)
     return adj_list, circuit_max
 
 #Find start/end nodes
@@ -111,13 +111,23 @@ def find_eulerian_cycle(my_list):
 def genome_path_from_eulerian_path(eulerian_path):
     # takes in something like this GGC->GCT->CTT->TTA->TAC->ACC->CCA
     # returns a genome sequence like this GGCTTACCA
+    print(eulerian_path)
+         
     kmers = eulerian_path.split("->")
+    #gets rid of empty space. Probably a better way of doing this. 
+    for i in range(len(kmers)):
+        if kmers[i] == "":
+            del kmers[i]
     genome = ""
     for i in range(len(kmers)):
         genome = genome[:i] + kmers[i]
+        #print(i)
+        #print(genome)
+        print(kmers[i])
     return genome
    
 k = 4
+"""
 kmers = [
     "CTTA",
     "ACCA",
@@ -126,9 +136,35 @@ kmers = [
     "GCTT",
     "TTAC"
 ]
+"""
 
+kmers = [
+    "AAAT",
+    "AATG",
+    "ACCC",
+    "ACGC",
+    "ATAC",
+    "ATCA",
+    "ATGC",
+    "CAAA",
+    "CACC",
+    "CATA",
+    "CATC",
+    "CCAG",
+    "CCCA",
+    "CGCT",
+    "CTCA",
+    "GCAT",
+    "GCTC",
+    "TACG",
+    "TCAC",
+    "TCAT",
+    "TGCA"
+]
 #data = [line.strip() for line in open("files/string_reconstruction_problem.txt")]
 #k = data[0]
 #kmers = data[1:]
+
+#Sample output CAAATGCATACGCTCATCACCC
 
 print(string_reconstruction_problem(k, kmers))
