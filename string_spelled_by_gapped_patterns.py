@@ -3,6 +3,8 @@
 #Input: Integers k and d followed by a sequence of (k, d)-mers (a1|b1), … , (an|bn) such that Suffix(ai|bi) = Prefix(ai+1|bi+1) for 1 ≤ i ≤ n-1.
 #Output: A string Text of length k + d + k + n - 1 such that the i-th (k, d)-mer in Text is equal to (ai|bi)  for 1 ≤ i ≤ n (if such a string exists).
 
+import sys
+
 """
 Pseudocode
 first_patterns = the sequence of initial k-mers from GappedPatterns
@@ -66,6 +68,14 @@ print(string_spelled_by_gapped_patterns(k, d, kmer_pairs))
 #raw_data = open('files/open('files/eulerian_cycle.txt', 'r')
 
 raw_data = [line.strip() for line in open("files/kmer_pairs_dataset.txt")]
+
+"""
+#code for stdin/out
+raw_data = []
+for line in sys.stdin:
+    raw_data.append(line.rstrip())
+"""
+
 if(raw_data[0] == "Input"):
     del raw_data[0]
 k, d = map(int, raw_data[0].split(" "))
