@@ -1,6 +1,4 @@
-
-def maximal_non_branching_paths(adjacency_list):
-    """
+"""
     Input: The adjacency list of a adjacency_list whose nodes are integers.
     Output: The collection of all maximal nonbranching paths in this adjacency_list.    
     """
@@ -8,7 +6,11 @@ def maximal_non_branching_paths(adjacency_list):
     This code takes an adjacency list, formats to graph/dict, determines which nodes are 1-in-1-out.
     From that, creates paths that do not branch (non-maximal-branching-paths) aka paths consisting
     of single edges. 
-    """
+"""
+
+import sys
+
+def maximal_non_branching_paths(adjacency_list):
     
     #reformats data to remove -> and save to graph
     graph = {}
@@ -100,6 +102,13 @@ adjacency_list = [
 ]
 """
 adjacency_list = [line.strip() for line in open("files/maximal_non_branching_paths_data.txt")]
+
+"""
+#code for stdin/out
+adjacency_list = []
+for line in sys.stdin:
+    adjacency_list.append(line)
+"""
 
 print('\n'.join(maximal_non_branching_paths(adjacency_list)))
 
