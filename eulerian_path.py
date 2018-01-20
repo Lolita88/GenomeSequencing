@@ -1,6 +1,6 @@
 from copy import deepcopy
 from random import randint
-import random
+import random, sys
 #v - start node - having out-degree one greater than its in-degree (out(v) - in(v) = 1)
 # limited to end at another special node, w - end node - having out-degree one smaller 
 # than its in-degree (in(w) - out(w) = 1).
@@ -88,6 +88,15 @@ def find_eulerian_cycle(my_list):
     for vert in circuit[::-1]:
         path += (vert + '->')
     return path.strip('->')
+
+my_list = [
+    "1 -> 2,3,5",
+    "2 -> 1,4",
+    "3 -> 2,5",
+    "4 -> 1,2,5",
+    "5 -> 3,4"
+]
+
 """
 my_list = [
     "0 -> 2",
@@ -99,6 +108,7 @@ my_list = [
      "8 -> 9",
      "9 -> 6"]
 """
+"""
 my_list = [
     "CGT|ATG -> GTG|TGT",
     "GAG|TTG -> AGA|TGA",
@@ -109,10 +119,20 @@ my_list = [
     "TCG|GAT -> CGT|ATG",
     "TGA|GTT -> GAG|TTG",
     "TGG|TGA -> GGT|GAG"
-
 ]
-
+"""
+"""
+data = []
+for line in sys.stdin:
+    data.append(line)
+my_list = data
+"""
 # ex output: 6->7->8->9->6->3->0->2->1->3->4
 #my_list = open('files/eulerian_path.txt', 'r')
 
 print(find_eulerian_cycle(my_list))
+
+"""
+#Sample output:
+6->7->8->9->6->3->0->2->1->3->4
+"""
