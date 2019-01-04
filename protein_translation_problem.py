@@ -12,16 +12,19 @@ def protein_translation_problem(rna, rna_codon_table_array):
         #  that do not translate into amino acids and serve to halt translation
             k,v = each.split(" ")
         except ValueError: 
+            #if v is a stop codon, don't save it
             v = ""
-            #print("stop")
+            #print("stop") 
         if v != "":
-            # v is one letter abbreviation for AA
+            # v is an AA abbreciaton, so save
             rna_dict[k] = v
        
     for i in range(0,len(rna), 3):
+        # loop through the rna string 3 at a time. Only working w one reading frame.
         #print(rna[i:i+3])
         curr_codon = rna[i:i+3]
         if curr_codon in rna_dict:
+            # add codon's single letter version to string pattern from dict look up
             pattern = pattern + rna_dict[curr_codon]
     return pattern       
 
