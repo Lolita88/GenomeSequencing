@@ -95,12 +95,9 @@ def convert_found_codons_for_output(codon_dict):
 
 def get_codons(peptide, rna_codon_table_array):
     #print("peptide " + str(peptide))
-    #print(type(peptide))
     #print("length " + str(len(peptide)))
-    pattern_codons_dict = {}
-    #pattern_codons = [] # needs to be a list of dicts
+    #pattern_codons = [] # needs to be a list of dicts, making global
     rna_dict = {}
-
     # turn rna_codon_table_array into a dict without stops
     for each in rna_codon_table_array:
         try: #need to handle exceptions when there are "stop codons"
@@ -111,34 +108,21 @@ def get_codons(peptide, rna_codon_table_array):
             #print("stop")
         if v != "":
             rna_dict[k] = v
-    #print("rna_dict " + str(rna_dict)) #whole codon table array minus stops
-
     # go through passed in peptide string and add to list in order of peptides
-    # for T, ex. first in list, create a dict for the obj
-    
     for i in range(len(peptide)): #TAQTREAM
-        #print(i) # correct 0-7
-        #peptide_dict = {}
-        #pattern_codons[i].append(peptide_dict) # make dict here
-        #print("peptide_dict " + peptide_dict)
+        #print(i)
         list_of = []
         for key,val in rna_dict.items():
             #print("v " + str(v))
             #print("peptide[i] " + str(peptide[i]))
-            
             if peptide[i] == val: # then match of codon to peptide
-                peptide_dict = {}
-                #print("match")
-                #print(key)
-                #print(val)
                 peptide_dict = {val:key}
                 #print("peptide_dict " + str(peptide_dict))
-                #pattern_codons.append(peptide_dict) #seems to be breaking...
                 list_of.append(peptide_dict)
                 #print("pattern_codons " + str(pattern_codons)) # all dict objs
         pattern_codons.append(list_of)
-        #print("pattern_codons " + str(pattern_codons))
-    # endcoded_peptides can ONLY have a list of 9 dicts, or whatever the length of the peptide is. Need to redo. Done!
+    print("pattern_codons " + str(pattern_codons))
+    # [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
     #return pattern_codons #list of dicts k = peptide, v = codon, all possible for passed in peptide
 
 def get_reverse_strand_dna(dna):
@@ -231,27 +215,19 @@ def search_strand_for_pattern(strand, peptide, coding_strand):
                 #temp_list = []
                 #print(dict_list) #loops through all lists of dicts in order
                 for key,val in dict_list.items():
-                    print("key " + str(key)) #key R
-                    print("val " + str(val)) #val AGA
+                    #print("key " + str(key)) #key R
+                    #print("val " + str(val)) #val AGA
                     # T    ACC, ACG, ACA, ACU
                     if temp_strand_codon == val:
                         # match and add to list of dicts and keep going in same reading frame "i"
                         print("match at " + str(i))
-                        print(key)
+                        #print(key)
                         #print(temp_strand_codon)
                         temp_list.append(val)
-                        print("temp_list " + str(temp_list))
-                        #break
-                        #break; #need to break all the way out to first loop if first match
-                        # doesn't work and delete anything saved until the string is the length of peptide
-                        #add each possible pattern_codon to list of TAQTREAM OR search to see if next matches
-                    else:
-                        #print("break") no match duh, move on, move on, to what? hmmmm
-                        # to the next frame, then start from the first peptide, so yeah, all dem breaks
-                        break 
-                    
-                    break
-                    
+                        #print("temp_list " + str(temp_list))
+                        # don't need an else or a break here because breaks only work on for and while's...
+                        # go where from here???
+                        # write a function and call from here
                 break
                 
             break
@@ -267,7 +243,6 @@ def reverse(s):
 
 def get_peptide(codons, rna_codon_table_array):
     rna_dict = {}
-    pattern_codons_dict = {}
     codon_str = ""
     this_peptide = []
     for each in rna_codon_table_array:
