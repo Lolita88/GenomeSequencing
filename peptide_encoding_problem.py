@@ -94,14 +94,11 @@ def convert_found_codons_for_output(codon_dict):
     return output_rna
 
 def get_codons(peptide, rna_codon_table_array):
-    #print("peptide " + str(peptide))
     #print("length " + str(len(peptide)))
-    #pattern_codons = [] # needs to be a list of dicts, making global
     rna_dict = {}
     # turn rna_codon_table_array into a dict without stops
     for each in rna_codon_table_array:
         try: #need to handle exceptions when there are "stop codons"
-            #that do not translate into amino acids and serve to halt translation
             k,v = each.split(" ")
         except ValueError:
             v = ""
@@ -109,11 +106,10 @@ def get_codons(peptide, rna_codon_table_array):
         if v != "":
             rna_dict[k] = v
     # go through passed in peptide string and add to list in order of peptides
-    for i in range(len(peptide)): #TAQTREAM
+    for i in range(len(peptide)): 
         #print(i)
         list_of = []
         for key,val in rna_dict.items():
-            #print("v " + str(v))
             #print("peptide[i] " + str(peptide[i]))
             if peptide[i] == val: # then match of codon to peptide
                 peptide_dict = {val:key}
