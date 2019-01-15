@@ -18,6 +18,11 @@ M	AUG
 """
 
 pattern_codons = [] # needs to be a list of dicts
+frame = 0 #not sure I want this here since I may bounce around
+peptide_frame = 0
+
+temp_list = []
+perm_peptide_list = []
 
 def peptide_encoding_problem(dna, peptide, rna_codon_table_array):
     #looking to output all possible encoded peptides
@@ -43,7 +48,7 @@ def peptide_encoding_problem(dna, peptide, rna_codon_table_array):
     #attrobj = attrdict.wrap(obj)
     #pattern_codons = attrdict.wrap(get_codons(peptide, rna_codon_table_array))
     #print("pattern_codons " + str(pattern_codons))
-    # {'M': ['AUG'], 'A': ['GCA', 'GCC', 'GCG', 'GCU']} # wrong now
+    # [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
     # [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
 
     #try to find codon pattern in rna 5'to 3'
@@ -105,6 +110,7 @@ def get_codons(peptide, rna_codon_table_array):
             #print("stop")
         if v != "":
             rna_dict[k] = v
+    #print("rna_dict " + str(rna_dict))
     # go through passed in peptide string and add to list in order of peptides
     for i in range(len(peptide)): 
         #print(i)
@@ -179,58 +185,45 @@ def rna_transcribed_to_dna(rna):
     return dna
 
 def search_strand_for_pattern(strand, peptide, coding_strand):
-    #search_strand_for_pattern(rna_5_3, peptide, True)
-    #will pattern_codons always be in same order, since dict?
-    #go through all reading frames, look for first codon, find, then look for second
-    #pattern_codons is now a list of dicts, not just a dict
-    print("mother fuck!")
-    possible_peptides = [] #list of codons, don't think I need a dict
     print(peptide)
-    #print("pattern_codons " + str(pattern_codons))
-    """
-    TAQTREAM
-    pattern_codons [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
-    """
-    #print("strand " + str(strand))
-    #print(len(strand)-2) #8140
-    #for each codon in rna/dna strand, reading frame - one at a time
-    for i in range(len(strand)-2):
-    #for i in range(50): # cut down to shorter data from beginning of strand
-        # GCTACCCCCCTGGTGGAGTA
-        #print(i) #number
-        #print(strand[i:i+3]) # codons, first codon is GCU but doesn't show in editor because too much info - fucking python, grrrrr
-        temp_strand_codon = strand[i:i+3]
-        temp_list = []
-        #print("temp_strand_codon " + str(temp_strand_codon))
-        # look for match of "val" from pattern_codon in each reading frame
-        for j in range(len(pattern_codons)): 
-            #print("j " + str(j))
-            #print("pattern_codes[j] " + str(pattern_codons[j].list_of[0]))
-            #for m in range(len(pattern_codons[j].list_of)):
-            for dict_list in pattern_codons[j]:
-                #temp_list = []
-                #print(dict_list) #loops through all lists of dicts in order
-                for key,val in dict_list.items():
-                    #print("key " + str(key)) #key R
-                    #print("val " + str(val)) #val AGA
-                    # T    ACC, ACG, ACA, ACU
-                    if temp_strand_codon == val:
-                        # match and add to list of dicts and keep going in same reading frame "i"
-                        print("match at " + str(i))
-                        #print(key)
-                        #print(temp_strand_codon)
-                        temp_list.append(val)
-                        #print("temp_list " + str(temp_list))
-                        # don't need an else or a break here because breaks only work on for and while's...
-                        # go where from here???
-                        # write a function and call from here
-                break
+    global frame
+    search_next_reading_frame(frame, strand, peptide, coding_strand) 
+
+def search_next_reading_frame(frame, strand, peptide, coding_strand):
+    global frame
+    #print("temp_strand_codon " + str(temp_strand_codon)) #AUG
+    global peptide_frame # 0 to start with
+    search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
+
+def search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand):
+    global peptide_frame
+    global frame
+    # look for match of "val" from pattern_codon in each reading frame
+    temp_strand_codon = strand[frame:frame+3]
+    for dict_list in pattern_codons[peptide_frame]:
+        #print("dict_list " + str(dict_list)) #loops through all lists of dicts in order
+        for key,val in dict_list.items():
+            #print("key " + str(key)) #key R
+            #print("val " + str(val)) #val AGA
+            if temp_strand_codon == val:
+                # match and add to list of dicts and keep going in same reading frame "i"
+                print("match at " + str(frame))
+                #print(type(reading_frame))
+                temp_list.append(val)
+                print("temp_list " + str(temp_list))
                 
-            break
-        
-
-    #print("possible_peptides " + str(possible_peptides))
-
+                peptide_frame += 1
+                 
+                frame += 3
+                temp_strand_codon = strand[frame:frame+3]
+                search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
+                print(str(temp_list))
+                if(len(temp_list) == len(peptide)):
+                    perm_peptide_list.append(temp_list)
+                    print(str(peptide_frame))
+                    print(str(frame))
+                    #search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
+              
 def reverse(s): 
     if len(s) == 0: 
         return s 
