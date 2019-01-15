@@ -3,11 +3,26 @@ Peptide Encoding Problem: Find substrings of a genome encoding a given amino aci
 Input: A DNA string Text, an amino acid string Peptide, and the array GeneticCode.
 Output: All substrings of Text encoding Peptide (if any such substrings exist).
 """
+"""
+TAQTREAM
+
+T 	ACC, ACG, ACA, ACU
+A	GCC, CCG, ,GCA, GCU
+Q	CAA, CAG
+
+T 	ACC, ACG, ACA, ACU
+R	CGC, CGG, CGA, CGU
+E	GAA, GAG
+A	GCC, CCG, ,GCA, GCU
+M	AUG
+"""
+
+pattern_codons = [] # needs to be a list of dicts
 
 def peptide_encoding_problem(dna, peptide, rna_codon_table_array):
     #looking to output all possible encoded peptides
     #codon_table = rna_codon_table_array
-    decoded_peptides_found = {}
+    #decoded_peptides_found = {}
 
     #strings that will have to be searched for MA once encoded to peptide
     # assuming if one string, it's coming in 5' to 3'
@@ -21,18 +36,26 @@ def peptide_encoding_problem(dna, peptide, rna_codon_table_array):
     #print("rna_3_5 " + str(rna_3_5))
     #rna_5_3 AUGGCCAUGGCCCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA
     #rna_3_5 UCACCCGUUAAUACGGGUACUAUUGAUCUCAGUUCUGGGGGCCAUGGCCAU
-    pattern_codons = get_codons(peptide, rna_codon_table_array)
-    print("pattern_codons " + str(pattern_codons))
-    # {'M': ['AUG'], 'A': ['GCA', 'GCC', 'GCG', 'GCU']}
+    # fix get_codons to handle list of dicts not just dicts
+
+    #pattern_codons = get_codons(peptide, rna_codon_table_array)
+    get_codons(peptide, rna_codon_table_array)
+    #attrobj = attrdict.wrap(obj)
+    #pattern_codons = attrdict.wrap(get_codons(peptide, rna_codon_table_array))
+    #print("pattern_codons " + str(pattern_codons))
+    # {'M': ['AUG'], 'A': ['GCA', 'GCC', 'GCG', 'GCU']} # wrong now
+    # [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
 
     #try to find codon pattern in rna 5'to 3'
-    decoded_peptides_found_rna_5_3 = search_strand_for_pattern(rna_5_3, peptide, pattern_codons, True)
-    decoded_peptides_found_rna_3_5 = search_strand_for_pattern(rna_3_5, peptide, pattern_codons, False)
+    decoded_peptides_found_rna_5_3 = search_strand_for_pattern(rna_5_3, peptide, True)
+    #decoded_peptides_found_rna_3_5 = search_strand_for_pattern(rna_3_5, peptide, False)
     #{0: ['AUG', 'GCC'], 6: ['AUG', 'GCC']}
     #['GGC', 'CAU']
-    list_1 = convert_found_codons_for_output(decoded_peptides_found_rna_5_3)
-    list_2 = convert_found_codons_for_output(decoded_peptides_found_rna_3_5)
-    return(join_peptides_from_lists(list_1, list_2))
+
+    #list_1 = convert_found_codons_for_output(decoded_peptides_found_rna_5_3)
+    #list_2 = convert_found_codons_for_output(decoded_peptides_found_rna_3_5)
+    #return(join_peptides_from_lists(list_1, list_2))
+
     #print(convert_found_codons_for_output(decoded_peptides_found_rna_5_3))
     #print(convert_found_codons_for_output(decoded_peptides_found_rna_3_5))
     #convert_found_codons_for_output(decoded_peptides_found_rna_5_3)
@@ -71,39 +94,32 @@ def convert_found_codons_for_output(codon_dict):
     return output_rna
 
 def get_codons(peptide, rna_codon_table_array):
-    print("peptide " + str(peptide))
-    encoded_peptides_dict = {}
+    #print("length " + str(len(peptide)))
     rna_dict = {}
+    # turn rna_codon_table_array into a dict without stops
     for each in rna_codon_table_array:
         try: #need to handle exceptions when there are "stop codons"
-            #that do not translate into amino acids and serve to halt translation
             k,v = each.split(" ")
         except ValueError:
             v = ""
             #print("stop")
         if v != "":
             rna_dict[k] = v
-    #print("rna_dict " + str(rna_dict)) #whole codon table array minus stops
-
-    this_peptide = []
-    for each in peptide: #peptide is peptide passed in
-        this_peptide.append(each)
-    #print(this_peptide) # M A
-
-    for each in this_peptide:
-        #print("peptide " + str(each))
-        temp_list = []
-        for key in rna_dict:
-            #print(rna_dict[key])
-            #print(key)
-            if each == rna_dict[key]: #match!
-                # add to list to add to dict key
-                temp_list.append(key) # for each key, one or more codons
-        #print(temp_list)
-        encoded_peptides_dict[each] = temp_list
-    #print("encoded_peptides_dict " + str(encoded_peptides_dict))
-    # {'M': ['AUG'], 'A': ['GCA', 'GCC', 'GCG', 'GCU']}
-    return encoded_peptides_dict
+    # go through passed in peptide string and add to list in order of peptides
+    for i in range(len(peptide)): 
+        #print(i)
+        list_of = []
+        for key,val in rna_dict.items():
+            #print("peptide[i] " + str(peptide[i]))
+            if peptide[i] == val: # then match of codon to peptide
+                peptide_dict = {val:key}
+                #print("peptide_dict " + str(peptide_dict))
+                list_of.append(peptide_dict)
+                #print("pattern_codons " + str(pattern_codons)) # all dict objs
+        pattern_codons.append(list_of)
+    print("pattern_codons " + str(pattern_codons))
+    # [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
+    #return pattern_codons #list of dicts k = peptide, v = codon, all possible for passed in peptide
 
 def get_reverse_strand_dna(dna):
     return dna[::-1]
@@ -162,90 +178,58 @@ def rna_transcribed_to_dna(rna):
     dna = rna.replace("U", "T")
     return dna
 
-def search_strand_for_pattern(strand, peptide, pattern_codons, coding_strand):#will pattern_codons always be in same order, since dict?
+def search_strand_for_pattern(strand, peptide, coding_strand):
+    #search_strand_for_pattern(rna_5_3, peptide, True)
+    #will pattern_codons always be in same order, since dict?
     #go through all reading frames, look for first codon, find, then look for second
-    #reading frame
-    #codon_list[]
-    temp_peptide_dict = {}
-    # go through strand
+    #pattern_codons is now a list of dicts, not just a dict
+   #print("mother fuck!")
+    possible_peptides = [] #list of codons, don't think I need a dict
+    print(peptide)
+    #print("pattern_codons " + str(pattern_codons))
+    """
+    TAQTREAM
+    pattern_codons [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
+    """
+    #print("strand " + str(strand))
+    #print(len(strand)-2) #8140
+    #for each codon in rna/dna strand, reading frame - one at a time
     for i in range(len(strand)-2):
-        temp_codon_location = 0
-        #print(peptide)
+    #for i in range(50): # cut down to shorter data from beginning of strand
+        # GCTACCCCCCTGGTGGAGTA
         #print(i) #number
-        #print(strand[i:i+3]) # codons
-        #for each in pattern_codons:
-        for key, val in pattern_codons.items():
-            # dict_items([('M', ['AUG']), ('A', ['GCA', 'GCC', 'GCG', 'GCU'])])
-            #print(len(val))
-            #print(key) # M or A
-            #print(val) # ['AUG'] or ['GCA', 'GCC', 'GCG', 'GCU']
-            if(len(val) == 1):
-                #if single codon for first position, check
-                temp_val = str(val).strip('[]').replace("'","")
-                #print(temp_val) # AUG
-                #print(strand[i:i+3])
-                if(temp_val == strand[i:i+3]): #looping through strand ONE reading frame at a time
-                    #if match, add to temp_peptide_dict[], move down 3, check next
-                    #print("match at " + str(i))
-                    #print(strand[i:i+3])
-                    temp_peptide_dict[i] = [] # wtf? it's a dict above
-                    #print(type(temp_peptide_dict))
-                    temp_peptide_dict[i].append(temp_val)
-                    #move to next
-                else:
-                    #no match, move to next reading frame, need to make sure this is happening
-                    break
-            elif(len(val) > 1): #need to check all, if in this case: ('A', ['GCA', 'GCC', 'GCG', 'GCU'])]
-                for each in val:
-                    #print(each) 
-                    #print(strand[i+3:i+6])
-                    if(each == strand[i+3:i+6]):
-                        #print(strand[i+3:i+6])
-                        #print("match2")
-                        #print(i)
-                        temp_peptide_dict[i].append(each)
-                        #print(temp_peptide_dict)
-            #else:
-                # do nothing
-                #print("oh hello")
-    if coding_strand:
-        #print("coding strand")
-        #print(temp_peptide_dict)
-        return temp_peptide_dict
-    else:
-        #print("non coding strand" + str(temp_peptide_dict))
-        new_temp_peptide_dict = {} 
-        for key,val in temp_peptide_dict.items():
-            #rev codon letters
-            #print(val)
-            new_temp_peptide_dict[key] = []
-            temp_list = []
-            for each in val:
-                #print("each " + str(each))
-                new_val = each[::-1]
-                #print("new_val " + str(new_val))
-                #rev codon order 
-                temp_list.append(new_val)
-                #print("temp_iist working " + str(temp_list)) #working
-                #temp_list[::-1]
-            temp_list.reverse()
-            #print("temp_iist rev" + str(temp_list)) #working
-            new_temp_peptide_dict[key] = []
-            new_temp_peptide_dict[key] = temp_list
-            #print("new_temp_peptide_dict[key] " + str(new_temp_peptide_dict[key])) #need rev compliment GGC, GGC CAT
-            for key,val in new_temp_peptide_dict.items():
-                rev_each = []
-                for each in val:
-                    temp_each = get_complement(each)
-                    #print(temp_each)
-                    rev_each.append(temp_each)
-                    #print(each)
-                    #print("rev_each " + str(rev_each))
-                new_temp_peptide_dict[key] = rev_each
-                #print("new_temp_peptide_dict[key].value() " + str(new_temp_peptide_dict[key].val))
-                #new_temp_peptide_dict[key] += get_reverse_complement(temp_list[i])
-                #print("new_temp_peptide_dict " + str(new_temp_peptide_dict))
-    return new_temp_peptide_dict  
+        #print(strand[i:i+3]) # codons, first codon is GCU but doesn't show in editor because too much info - fucking python, grrrrr
+        temp_strand_codon = strand[i:i+3]
+        temp_list = []
+        #print("temp_strand_codon " + str(temp_strand_codon))
+        # look for match of "val" from pattern_codon in each reading frame
+        for j in range(len(pattern_codons)): 
+            #print("j " + str(j))
+            #print("pattern_codes[j] " + str(pattern_codons[j].list_of[0]))
+            #for m in range(len(pattern_codons[j].list_of)):
+            for dict_list in pattern_codons[j]:
+                #temp_list = []
+                #print(dict_list) #loops through all lists of dicts in order
+                for key,val in dict_list.items():
+                    #print("key " + str(key)) #key R
+                    #print("val " + str(val)) #val AGA
+                    # T    ACC, ACG, ACA, ACU
+                    if temp_strand_codon == val:
+                        # match and add to list of dicts and keep going in same reading frame "i"
+                        print("match at " + str(i))
+                        #print(key)
+                        #print(temp_strand_codon)
+                        temp_list.append(val)
+                        #print("temp_list " + str(temp_list))
+                        # don't need an else or a break here because breaks only work on for and while's...
+                        # go where from here???
+                        # write a function and call from here
+                break
+                
+            break
+        
+
+    #print("possible_peptides " + str(possible_peptides))
 
 def reverse(s): 
     if len(s) == 0: 
@@ -254,7 +238,9 @@ def reverse(s):
         return reverse(s[1:]) + s[0] 
 
 def get_peptide(codons, rna_codon_table_array):
-    encoded_peptides_dict = {}
+    rna_dict = {}
+    codon_str = ""
+    this_peptide = []
     for each in rna_codon_table_array:
         try: #need to handle exceptions when there are "stop codons"
             #that do not translate into amino acids and serve to halt translation
@@ -265,25 +251,7 @@ def get_peptide(codons, rna_codon_table_array):
         if v != "":
             rna_dict[k] = v
     return codon_str[::-1]
-    this_peptide = []
-    for each in peptide: #peptide is peptide passed in
-        this_peptide.append(each)
-    #print(this_peptide) # M A
-
-    for each in codons:
-        temp_list = []
-        for val in rna_dict:
-            print(val)
-            #print(rna_dict[key])
-            #print(key)
-            """if each == rna_dict[val]: #match!
-                # add to list to add to dict key
-                temp_list.append(key) # for each key, one or more codons"""
-        #print(temp_list)
-        encoded_peptides_dict[each] = temp_list
-    print("encoded_peptides_dict " + str(encoded_peptides_dict))
-    return encoded_peptides_dict
-
+    
 def get_rev_complement_codon_seqs(decoded_peptides_dict, rna_codon_table_array):
     complement_codon_dict = {}
     for key, val in decoded_peptides_dict.items():
@@ -294,17 +262,20 @@ def get_rev_complement_codon_seqs(decoded_peptides_dict, rna_codon_table_array):
         temp_val = str(val).strip('[]').replace("'","").replace(",","").replace(" ","")
         #print(temp_val)
     #return codon_str[::-1]
-"""
+
 dna = "ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA"
 peptide = "MA"
-"""
+
+#gets the codon table
 rna_codon_table_array = [line.strip() for line in open("files/rna_codon_table_array.txt")]
 
+"""
 data = [line.strip() for line in open("files/peptide_encoding_problem.txt")]
 dna = data[0]
-peptide = str(data[1:])
+peptide = '\n'.join(data[1:])
 print(peptide)
 #print(dna)
+"""
 
 print(peptide_encoding_problem(dna, peptide, rna_codon_table_array))
 
