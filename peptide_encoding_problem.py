@@ -18,7 +18,8 @@ M	AUG
 """
 
 pattern_codons = [] # needs to be a list of dicts
-frame = 0 #not sure I want this here since I may bounce around
+frame = 0 #this is for incrementing codon window on strand
+reading_frame = 0
 peptide_frame = 0
 
 temp_list = []
@@ -185,45 +186,61 @@ def rna_transcribed_to_dna(rna):
     return dna
 
 def search_strand_for_pattern(strand, peptide, coding_strand):
-    print(peptide)
-    global frame
-    search_next_reading_frame(frame, strand, peptide, coding_strand) 
+    #print(peptide)
+    #global reading_frame
+    search_next_peptide_frame(strand, peptide, coding_strand) 
 
-def search_next_reading_frame(frame, strand, peptide, coding_strand):
-    global frame
-    #print("temp_strand_codon " + str(temp_strand_codon)) #AUG
-    global peptide_frame # 0 to start with
-    search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
-
-def search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand):
+def search_next_reading_frame(strand, peptide, coding_strand):
+    global reading_frame
+    reading_frame += 1
     global peptide_frame
+    peptide_frame = 0 # reset to 0 each time reading_frame moves
+    search_next_peptide_frame(strand, peptide, coding_strand)
+
+def search_next_peptide_frame(strand, peptide, coding_strand):
     global frame
+    global reading_frame
+    global peptide_frame # 0 to start with
+    print("strand " + str(strand) + str(coding_strand))
+    print("reading_frame " + str(reading_frame))
+    print("peptide_frame " + str(peptide_frame))
     # look for match of "val" from pattern_codon in each reading frame
     temp_strand_codon = strand[frame:frame+3]
+    print("temp_strand_codon " + str(temp_strand_codon)) #AUG
     for dict_list in pattern_codons[peptide_frame]:
         #print("dict_list " + str(dict_list)) #loops through all lists of dicts in order
         for key,val in dict_list.items():
             #print("key " + str(key)) #key R
-            #print("val " + str(val)) #val AGA
+            print("val " + str(val)) #val AGA
             if temp_strand_codon == val:
                 # match and add to list of dicts and keep going in same reading frame "i"
                 print("match at " + str(frame))
-                #print(type(reading_frame))
                 temp_list.append(val)
-                print("temp_list " + str(temp_list))
-                
-                peptide_frame += 1
-                 
-                frame += 3
-                temp_strand_codon = strand[frame:frame+3]
-                search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
-                print(str(temp_list))
+                #print("temp_list " + str(temp_list))
+                #print("peptide_frame " + str(peptide_frame))
+                peptide_frame += 1 # works!!!!
+                frame += 3 # works!!! from 0 to 3
+                #print("frame " + str(frame))
+                temp_strand_codon = strand[frame:frame+3] # works next is GCC
+                #print("temp_strand_codon " + str(temp_strand_codon))
+                #print("len of temp_list " + str(len(temp_list)))
+                #print("len of peptide " + str(len(peptide)))
                 if(len(temp_list) == len(peptide)):
+                    #peptide matched, add to perm list, increment strand reading frame
                     perm_peptide_list.append(temp_list)
-                    print(str(peptide_frame))
-                    print(str(frame))
-                    #search_next_peptide_frame(frame, peptide_frame, strand, peptide, coding_strand)
-              
+                    print("perm_peptide_list " + str(perm_peptide_list))
+                    if coding_strand == False:
+                        perm_peptide_list.reverse()
+                        print("perm_peptide_list reverse" + str(perm_peptide_list))
+
+                    #print("perm_peptide_list " + str(perm_peptide_list))
+                    temp_list.clear()
+                    search_next_reading_frame(strand, peptide, coding_strand)
+                else:
+                    # peptide not matched, keep going
+                    
+                    search_next_peptide_frame(strand, peptide, coding_strand)
+                
 def reverse(s): 
     if len(s) == 0: 
         return s 
