@@ -3,69 +3,105 @@ Peptide Encoding Problem: Find substrings of a genome encoding a given amino aci
 Input: A DNA string Text, an amino acid string Peptide, and the array GeneticCode.
 Output: All substrings of Text encoding Peptide (if any such substrings exist).
 """
-"""
-TAQTREAM
 
-T 	ACC, ACG, ACA, ACU
-A	GCC, CCG, ,GCA, GCU
-Q	CAA, CAG
+from pympler import tracker
+import copy
+tr = tracker.SummaryTracker()
 
-T 	ACC, ACG, ACA, ACU
-R	CGC, CGG, CGA, CGU
-E	GAA, GAG
-A	GCC, CCG, ,GCA, GCU
-M	AUG
-"""
-
-pattern_codons = [] # needs to be a list of dicts
-frame = 0 #this is for incrementing codon window on strand
+#global vars
+cur_frame = 0 #this is for incrementing codon window on strand
 reading_frame = 0
 peptide_frame = 0
+strand_len = 0
+end_reading_frame = 0
+peptide_codon_len = 0
 
+pattern_codons = [] #a list which hold dicts (pairs)
+#pattern_codons = [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
+#pattern_codons = [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
 temp_list = []
 perm_peptide_list = []
 
 def peptide_encoding_problem(dna, peptide, rna_codon_table_array):
-    #looking to output all possible encoded peptides
-    #codon_table = rna_codon_table_array
-    #decoded_peptides_found = {}
+    
+    print("dna len " + str(len(dna))) #8140 WTF!!!!
+    print("peptide " + str(peptide))
+    #print("rna_codon_table_array " + str(rna_codon_table_array))
+    global strand_len
+    global end_reading_frame
+    end_reading_frame = len(dna) - len(peptide)*3
+    print("end_reading_frame " + str(end_reading_frame))
+    strand_len = len(dna)
 
-    #strings that will have to be searched for MA once encoded to peptide
     # assuming if one string, it's coming in 5' to 3'
     dna_5_3 = dna #coding strand, like mRNA strand
-    dna_3_5 = get_reverse_complement(dna_5_3)
+    dna_3_5 = get_reverse_complement(dna_5_3) #rev and opp bp
     #print("dna_5_3 " + str(dna_5_3))
     #print("dna_3_5 " + str(dna_3_5))
-    rna_5_3 = dna_transcribed_to_rna(dna_5_3) #look in this strand for MA
+
+    # transcribe to rna
+    rna_5_3 = dna_transcribed_to_rna(dna_5_3)
     rna_3_5 = dna_transcribed_to_rna(dna_3_5) #then look here for MA but going to have to rev translate back
-    #print("rna_5_3 " + str(rna_5_3))
-    #print("rna_3_5 " + str(rna_3_5))
-    #rna_5_3 AUGGCCAUGGCCCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA
-    #rna_3_5 UCACCCGUUAAUACGGGUACUAUUGAUCUCAGUUCUGGGGGCCAUGGCCAU
-    # fix get_codons to handle list of dicts not just dicts
-
-    #pattern_codons = get_codons(peptide, rna_codon_table_array)
-    get_codons(peptide, rna_codon_table_array)
-    #attrobj = attrdict.wrap(obj)
-    #pattern_codons = attrdict.wrap(get_codons(peptide, rna_codon_table_array))
-    #print("pattern_codons " + str(pattern_codons))
-    # [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
-    # [[{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'Q': 'CAA'}, {'Q': 'CAG'}], [{'T': 'ACA'}, {'T': 'ACC'}, {'T': 'ACG'}, {'T': 'ACU'}], [{'R': 'AGA'}, {'R': 'AGG'}, {'R': 'CGA'}, {'R': 'CGC'}, {'R': 'CGG'}, {'R': 'CGU'}], [{'E': 'GAA'}, {'E': 'GAG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}], [{'M': 'AUG'}]]
-
-    #try to find codon pattern in rna 5'to 3'
-    decoded_peptides_found_rna_5_3 = search_strand_for_pattern(rna_5_3, peptide, True)
+    print("rna_5_3 " + str(rna_5_3))
+    print("rna_3_5 " + str(rna_3_5))
+    
+    #uncomment after debugging - DON'T FORGET # not hard coding the codon dict and won't read in for debugging
+    get_codons(peptide, rna_codon_table_array) #saves in global var pattern_codons for now
+    
+    search_reading_frame_for_pattern(rna_5_3, peptide, True)
     #decoded_peptides_found_rna_3_5 = search_strand_for_pattern(rna_3_5, peptide, False)
-    #{0: ['AUG', 'GCC'], 6: ['AUG', 'GCC']}
-    #['GGC', 'CAU']
+    
+    return(perm_peptide_list)
 
-    #list_1 = convert_found_codons_for_output(decoded_peptides_found_rna_5_3)
-    #list_2 = convert_found_codons_for_output(decoded_peptides_found_rna_3_5)
-    #return(join_peptides_from_lists(list_1, list_2))
+def search_reading_frame_for_pattern(strand, peptide, is_coding_strand):
+    #rename manage_reading_frame?
+    global reading_frame # starts at 0
+    global peptide_frame # starts at 0
+    global end_reading_frame # len of strand minus peptide len x3
 
-    #print(convert_found_codons_for_output(decoded_peptides_found_rna_5_3))
-    #print(convert_found_codons_for_output(decoded_peptides_found_rna_3_5))
-    #convert_found_codons_for_output(decoded_peptides_found_rna_5_3)
-    #convert_found_codons_for_output(decoded_peptides_found_rna_3_5)
+    # if not at last reading frame
+    if(reading_frame <= end_reading_frame):
+        reading_frame += 1 #always increment 1, unless close to end
+        peptide_frame = 0 #always start at beginning here
+        search_next_peptide(strand, peptide, is_coding_strand)
+    else:
+        print("at end of strand")
+
+def search_next_peptide(strand, peptide, is_coding_strand):
+    global cur_frame
+    global reading_frame
+    global peptide_codon_len
+    global strand_len
+    global peptide_frame
+    temp_strand_codon = strand[cur_frame:cur_frame+3]
+    next_frame = cur_frame+3
+    if(reading_frame <= (strand_len - peptide_codon_len)):
+        #need to clear out the key, value pair values
+        for key, value in pattern_codons[peptide_frame].items():
+            print("pattern_codons[peptide_frame] " + str(pattern_codons[peptide_frame]))
+            if temp_strand_codon == key:
+                print("match at cur_frame " + str(cur_frame))
+                #what do I need here? So far the rna peptide code, will need to change back to dna
+                temp_list.append(key)
+                # increment peptide_frame and cur_frame of strand
+                peptide_frame += 1
+                cur_frame += 3
+                #print("peptide_frame " + str(peptide_frame))
+                #print("cur_frame " + str(cur_frame))
+
+                #move codon window down one
+                temp_strand_codon = strand[cur_frame:cur_frame+3] 
+                #if done, DO SOMETHING, EXIT LOOP TO SOMEWHERE, PROBLEM MAY BE HERE?
+                if(len(temp_list) == len(peptide)):
+                    #peptide matched, add to perm list, increment strand reading frame
+                    perm_peptide_list = copy.deepcopy(temp_list)
+                    temp_list.clear()
+    
+            #pattern_codons [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
+            
+            #search next frame, reset peptide frame
+       
+
 def join_peptides_from_lists(a,b):
     peptide = []
     peptide.append(str('\n'.join(a)))
@@ -100,7 +136,7 @@ def convert_found_codons_for_output(codon_dict):
     return output_rna
 
 def get_codons(peptide, rna_codon_table_array):
-    #print("length " + str(len(peptide)))
+    global pattern_codons
     rna_dict = {}
     # turn rna_codon_table_array into a dict without stops
     for each in rna_codon_table_array:
@@ -108,26 +144,27 @@ def get_codons(peptide, rna_codon_table_array):
             k,v = each.split(" ")
         except ValueError:
             v = ""
-            #print("stop")
         if v != "":
             rna_dict[k] = v
     #print("rna_dict " + str(rna_dict))
     # go through passed in peptide string and add to list in order of peptides
-    for i in range(len(peptide)): 
+    for i in range(len(peptide)): #peptide is MA
         #print(i)
-        list_of = []
+        # for each letter, create a dict list_of
+        list_of = {}
+
+        #loop through codon dict and look for the peptide like MA
         for key,val in rna_dict.items():
             #print("peptide[i] " + str(peptide[i]))
             if peptide[i] == val: # then match of codon to peptide
-                peptide_dict = {val:key}
-                #print("peptide_dict " + str(peptide_dict))
-                list_of.append(peptide_dict)
-                #print("pattern_codons " + str(pattern_codons)) # all dict objs
-        pattern_codons.append(list_of)
-    print("pattern_codons " + str(pattern_codons))
-    # [[{'M': 'AUG'}], [{'A': 'GCA'}, {'A': 'GCC'}, {'A': 'GCG'}, {'A': 'GCU'}]]
-    #return pattern_codons #list of dicts k = peptide, v = codon, all possible for passed in peptide
+                #3 letter codon must be the key bc it's unique
+                #1 letter abbreviation is not unique, so is val
 
+                list_of[key] = val
+                #print("list_of " + str(list_of)) # all dict objs
+        pattern_codons.append(list_of)    
+    #print("pattern_codons " + str(pattern_codons))
+    
 def get_reverse_strand_dna(dna):
     return dna[::-1]
 
@@ -151,8 +188,7 @@ def get_reverse_complement(string):
             reverse_string += "C"
         else:
             return "non nucleotide found" #should throw error
-    #return reverse_string
-    return reverse_string[::-1]
+    return reverse_string[::-1] # reverses the string
 
 def get_complement(string):
     rna = False
@@ -184,63 +220,7 @@ def dna_transcribed_to_rna(dna):
 def rna_transcribed_to_dna(rna):
     dna = rna.replace("U", "T")
     return dna
-
-def search_strand_for_pattern(strand, peptide, coding_strand):
-    #print(peptide)
-    #global reading_frame
-    search_next_peptide_frame(strand, peptide, coding_strand) 
-
-def search_next_reading_frame(strand, peptide, coding_strand):
-    global reading_frame
-    reading_frame += 1
-    global peptide_frame
-    peptide_frame = 0 # reset to 0 each time reading_frame moves
-    search_next_peptide_frame(strand, peptide, coding_strand)
-
-def search_next_peptide_frame(strand, peptide, coding_strand):
-    global frame
-    global reading_frame
-    global peptide_frame # 0 to start with
-    print("strand " + str(strand) + str(coding_strand))
-    print("reading_frame " + str(reading_frame))
-    print("peptide_frame " + str(peptide_frame))
-    # look for match of "val" from pattern_codon in each reading frame
-    temp_strand_codon = strand[frame:frame+3]
-    print("temp_strand_codon " + str(temp_strand_codon)) #AUG
-    for dict_list in pattern_codons[peptide_frame]:
-        #print("dict_list " + str(dict_list)) #loops through all lists of dicts in order
-        for key,val in dict_list.items():
-            #print("key " + str(key)) #key R
-            print("val " + str(val)) #val AGA
-            if temp_strand_codon == val:
-                # match and add to list of dicts and keep going in same reading frame "i"
-                print("match at " + str(frame))
-                temp_list.append(val)
-                #print("temp_list " + str(temp_list))
-                #print("peptide_frame " + str(peptide_frame))
-                peptide_frame += 1 # works!!!!
-                frame += 3 # works!!! from 0 to 3
-                #print("frame " + str(frame))
-                temp_strand_codon = strand[frame:frame+3] # works next is GCC
-                #print("temp_strand_codon " + str(temp_strand_codon))
-                #print("len of temp_list " + str(len(temp_list)))
-                #print("len of peptide " + str(len(peptide)))
-                if(len(temp_list) == len(peptide)):
-                    #peptide matched, add to perm list, increment strand reading frame
-                    perm_peptide_list.append(temp_list)
-                    print("perm_peptide_list " + str(perm_peptide_list))
-                    if coding_strand == False:
-                        perm_peptide_list.reverse()
-                        print("perm_peptide_list reverse" + str(perm_peptide_list))
-
-                    #print("perm_peptide_list " + str(perm_peptide_list))
-                    temp_list.clear()
-                    search_next_reading_frame(strand, peptide, coding_strand)
-                else:
-                    # peptide not matched, keep going
-                    
-                    search_next_peptide_frame(strand, peptide, coding_strand)
-                
+   
 def reverse(s): 
     if len(s) == 0: 
         return s 
@@ -273,28 +253,21 @@ def get_rev_complement_codon_seqs(decoded_peptides_dict, rna_codon_table_array):
         #print(temp_val)
     #return codon_str[::-1]
 
-dna = "ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA"
-peptide = "MA"
-
 #gets the codon table
+#commented out for debugging - UNDO!!!!
 rna_codon_table_array = [line.strip() for line in open("files/rna_codon_table_array.txt")]
-
+#rna_codon_table_array = []
 """
 data = [line.strip() for line in open("files/peptide_encoding_problem.txt")]
 dna = data[0]
 peptide = '\n'.join(data[1:])
-print(peptide)
-#print(dna)
 """
 
+dna = "ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA"
+peptide = "MA"
+"""
+dna = "GCTACCCCCCTGGTGGAGTATCATAAACTGCGCAGACCCGCGAAGCAATGTGTTCTACCTATACGCGAGCGGAGCGCGAATGAGGACAAAGTTGCAAGATGCCCTTCGAACAATATGTAAGACGGTAAAAAACCACTGATTCAGTAGCGCGGCGGTGCCTTAAAAGATGATCAACCATCCAGGCATGCTTCATAGCCTCCCTAGTTTGTGCCGTCCTAGTCGAACAGCTCAAACTCGGGAAGCGATGTTCATGGCCTCCCTTGTCTGAGCTGTAGTATATTCTCGCGTTAAGACCACGGGCGAGTTATCTGTGCCACTGTTATTTCGTAGGGTGTACGACTATTCTCGACAGCGACTTACATGTGCCGTGTCTCGTATACAGATCTTGCGAAAGCTAGGAGCGACCATTGAATCAGCAATTGCGAAATCCCATGAGACGGTGCTATTTAAGATCTAAAAGACGTAGATAGAGGTAAGAGAGCCGTTTGCCTTTCATAGTATACGGAATTGGGGCGGAAGGCGTCATTACCAAGGCATAGTACTGCTGATCTATCGCTATGAGCTACTAGTCAAGGGTGGCGTCAAACGGTTAATTGGCATTGCTTCCCGAGTCTGAGCCGTTGGTCGGGGTTGCGGCGGCATGTTCACGACATATCCGAAAAAATGGAAACGAAGTCAATTTACACCGGCCGGTATCTTGATTCCTCACCATCAAGCTAATTGAGCAGTTCAGTCCGGTCGACCAGAAGAGCCTCCGCTGTCATGCGTTACTAGTACGACACCATTTAAGTGAGAGAATTTTGGCCTACATCGCTATTACCGACTGCTGCTACTCTCACCCGCCTCCGTTTCTCAGGACGACCGCGTTTGATAGACGTATCCGGCCGATGTAGGCCGTTTGTGATCCCGGGCGAGCTACTGCCGGGGTTTAAGGCATCTTATGCCTAGACCCCACAATAGGGGTGTCTGCAAACTCGCCCTCGTCTAGAGTGAGTTTCGCTGAATTTTACTCCCCATAAACCCGCCTGCCGCCGACCGATGTCCAATTACAGGGTTCGAGTCTCGAGATACCTGTTAAGGGCACGCGTTTCCGCTCGGATGCAACACGGAGAACGTCGTTTCCTCCTAGCGCGAGGAAACATCTCGACGCATGCGGAGGTACTGTCAACGATCTCACTTGGATTGCAGAAGCCTGTGTTTCAACATAAGTGGAACTCCGCCGGGAGACTCGGTGGTTCTAAAGATGTAGTTCCCTTCGTAGATCGTTTATGAGAATAACTTAGTCATTAGCCGCCCTTCGTCCAATATGCCTATGGATTTCGGTGGTCAAGCTGATTTGTTTCTTCGCTGACAGTTACGGCACACGCGGGTCCAGCCTGTCTCACCCTATTGTACTTCGAGGAGTGGGTGTAACTGCGCAAACGAGGGAAGCCATGATTCTTCTCAACCTTGCCATGGCTTCGCGTGTCTGGGCAGTTGGTTCAATATTTGTGGTCCCTTACATTGGAAACGGACCTCAGATTCCCGAAGCGGCGCAATACTTCTGCGTAACATGTGCACCATGGCCTCGCGGGTTTGTGCCGTTGATTTATCTTGCTGTGGGTACGAGAAAGAGGCAGAGTACCACAATAAAGATTGCTGTTCGAATACCCCCCATACTCCCTCTACGTGTGAGCAGGCACGGAAGGCCTCGTGTCTCGTCCTCAAGCTCTTCTTTAGCAACCTGGCCGTTAAACCAGCGACGGCTGTCTAGTTAAAGTTGAGAGCAATTGTCTTGCGCGAGTCAAGCGTGGATCATTTGCAATGCGCAGCGGCTAATGGAATATTCCAAGTCCGTTTCCTAGGTAAGTGTCCTAGTAGACTTTTCTAACAATATACCTCACCATACCACCACTTATGAAGTTCGTACGTAATGCGAATGGTGTATGGACTGTAAACAGCATCTAGCCGTCATTTCGTATTCAGCTTCCCCACCGGAGTCGTGATATGGGTCTTCGAGTGTGATTTGTTCGCGAATATTCGTTGGTGGGATAACGTGGCAACTTGGCTACGGTCTAGAATTTAGGGTTATGGGCCTTCCCACGGGTTAGTTGTGATCCTCCAACTAACCTTGCGTCCGCTATTGGAATTGGCGCGAAGTGGCATGGGCTAATAATGACGGCTCAGAAGATGGCCCAAATTCTTAAATATGTATACAGTTACCATACGTTGGACACATCATGTGATATAGTTACTTTCCACGGACCAGACTACAAACTGTATTGGTGATCCCGACTAGGACGCACGCCTGTGTGAACCATGCCAGTGCGCCAACATATCCTAATAGTGCCGGCTTCGATAGGAAGACGTTACTGCAGAGCATGGTCCGGACATTGTCGTCACTCCAGAACGGGAATTCAGTGAATAGCCGTTTATTGTGCGTTTGGTAGACGAGTGGCGAGAGAGAATAATGGCCCGCTCGCAGTGGGCGTAGCTGGTCATTTTCATGTCATTGGAATACCGACTGCGAACGGCGTTCGACACGGTACTCGCACCGCATATCTGTATGGATCTGCCCTCGACGTTTATGTTGGTGGTATTCCTGTGGCTCCCTGGTTCAATTTATTGCGCGTAACGCACGTATAGCAAACATAACCTCGCGCATAAAGGGTCACCGAGGCCTGGTTGTAGCATTAGTATATTACACTCCAACCTTTAATAATTTTCAGACCGTTACCCGCGCTCATTTCCTCTTTAGGACTGCACAGACTCGCGAAGCTATGAGCCGAACTTTTACACCCCCATACCATTTCGTGCATCGGAGCCTCTTGGCTCAACACTGTTTGTGCTGGTACCGGAGGGGTGCTCTCAAATGACAACTCGCTGGATGCAGCAGCCTTGATTCACCCTGCATGGCCTCGCGTGTCTGTGCTGTGCCGCGGCGGTAGAACACATCTATTAAACTTGGTCACAACGCCGGCGAGTCGCGTTTTTAAGCCTCGGACGATGTACCTTGTGAATGTCGTGTCCCCCTGGAGTTAACAGATACGGCGTTTCCGGACACAGTTCAGCGTTGCATAGAAAAATCGTCCCTGATGTCATTGCGTTCGAGCCTACTAGCTAGATTCCCGATTAATCTAGACGGCGTCGTAGTGGCAGGTTTATCGTTAGATGGGGTCGTGCTACCTAGCAACAGTTATCCTTCCGGGAGGGCACATGGTCCGGAGTCCTTCATTGCCTCACGAGTTTGCGCCGTAAGGCCGCATATCGACCCTTCCCCGCGTCTTCTGTGCCTAAGAATTAAGCAATACCAACTAACCGGGTCCCTGACTCGCTGGCCTAGTATATAATTAAGATATATCGGGTATAACCGCCATCATGGTGCGTTCTCTCCGTCGCAGGACTTCAGACTAGAGACTTGTGTTCCGAAGAGTCTTTACGCACGTCTCGCGATCATTATAAGACACCGTACTGGTAAGTGCGGTATAACGCTGGCCCTGGAATCGCCTTTCATTGTACGTCATTGACGCTCTCGAAGCTGGATACTTACTTAACCAAGCATTACCTAGAGCAACGCAATCCCAGTACAGCTGGTTTCCATTCCTGCGCGGGTTTAATGGTCTTGCAGCACTCGGCGGTCCGCAATTCGGTCCGCGTACACGACCCACTCTAGCAGAGGCGAAGATCTCCGACATACGACCCGGTCCCGTAAGTAGTAAAGAAAAAGTCAAGCCTCCCGAGCCTGCGAGAGAGTGCAGTCTCCGACGGAACGGCGGTGGACGTAGCAATATACGGCCTTTATACGGGCGATTTAGGAATCGCCTTGCGAGCTACGGTGGAACCTAAGGATATAGTCTCGCCTAGCGGAAGTGGTATCCTGTAGTCGTCTACGCCCCGCTCGGTGTACCTCTTGACAAATTTACGACGAAAGAACCTTACCAGCCTGTTATAACCCTTGCGCTCGCTCTAGGCAAACCGGCGCAGTGCAAGATTTTATTCCCTGTGGGTTGCCGGCAGGGAGCACACGCAAATATGGGTTCTGAGCGTACTCTAGTTCAACAATAGGCCACTGCAAAAGAACAGATCTCGTAGTACTTGATATATGGACGTGCCGAAAAGCTATATTATTTGAAGGCAGTCCATGAATAGCCAGTGCTGACCGAAACAATTAACCACACCCAGACGGGGCTTTTGAGATGCGGGCGGCTATGTTAATCTTGCCAAAGGGTAGTGAACGGCACAAACCCGCGAGGCAATGGCACAGACAAGAGAGGCCATGCGGGAAGCGTGATGGAAAAAAATGACTACTGGGGAATTCTATATCCCCGCATAACCCGAGACTAAACGCGCCGTGACGCCAACGCCGTGTTAATTCCGCAAAATAGCAGAGGACGCGTGGAACCGCTGCAATCACGACGACCGCCCAAACACGGGAGGCTATGTGCAAAAGTGCTGACTCGGAGCCTCAGCCGGAGTCCGCCTATGCGACCGCTAAACGTCGCCAGTTTTCAGGTGAGCCACACATAAGGGTAGCATCCGTGGAGTGGGCAACTTGGCGAAGTGGAGCTCCATGCGGATGGGCCACGATCGTTTTAGCATATCCTTGTACGTGTTATGTTAGGCAATTGCCCCAAATGCGCGGTACCCCGACATCCGGTGACGCACCTTTCGCGGGTGCGAGACGATCGTAGGCCCGTTCCTGTGGGGGCGGTGTGATGTGCGAACACCCGTCTGCGGACGAAGTCAGCTATTTACAAAAGATTGTATACCGTATACGCTGCAGTTCTCAGAACTCACTTTTGGGAGCTGCTACTTGGAAAGCGCTAATCAGCAGCAATATTGAACATAGCCTCGCGCGTTTGCGCTGTGTACTCCTGAGATGCCCCTTGGCGGTTGCCTATAGGTAGTAGCCTCGACCCAAAGCTACCTGGAAACCATAAGGAGACCCCAGGCCGAACGGGTCAGTAGGTCCGTTGTTAGACGTCCTAGAAATCGACGCATAAAGTGGCGATCGGCTAATGAGCGATCACACCTTGGTGACTCAAATGTTCAGAGTATCTAGCGTAAAGACAGCCCATCTAGGCATCATTTAAGTCCGACCTGCTCCACGTAATAAGCGTTTGACATGGAGATACGGCGGACGGTCAAAGTCACGTGATTTCTACATCAATGCATTGCCTCGCGGGTTTGTGCCGTGTTCTGTGCGGTACAAGGTCCTACCAGATTTCTGGGGTAAGGCAACTCCCTTTGCCCCTGGGACGTTGCAGAGCGAATGTCAATCATGCTTCGACCCAGTTCATACAAGGTATTATATTTGTATTGCGTAGTGTTCATCACCGTCCTCGGTTGAGCATCCGCGCCTCTGAAGAGATATTCTACAAATGATCATGGCTTCTCTAGTCTGGGCGGTGGGCGCTAACGTAGTTTGTAGGTGACAAATATGAACAACGAGTACCGGCATTACATGGCGTATCTTGCTGGCTCCCGGCCCCGCGGGCGGTATCTGTGACACGTACCTAGGTTCCTCGTAGAGTTAACAGTTATGAACACAACTTCGAAAACCTGATACCACTTCTACCCGGACGTTCCGTAAAGATATATTTGATAGGGGTCTATCGATTTCGCTGATTTTTCGAGCTAGACACAACCGGCATCTATGCCACAATCAAACGGAAATATCACATTCACATAGTAGTATCAATGGTGTCCTTTCCTCGAGTAGGGATATAAAGTTTGCAATCGAAATGAAACTCGTTAACGTAAGAGCGACTACTGTGCATGCACGTACATCGCCTCCCGAGTCTGTGCCGTTTCCCCAAGATCACAACGCGTCAACTCCTCGTGCGGGATCACATGCAGAAGAGAGGTGCAAGAACCCCGGTGTTCCGCTAGGGAGTATTACGGCAAACCATCAGGTAGGAAGGGGCGAAGCGATAGTGAGATGGTTGCAATTCGGCGTCCCGCCCCGGGGAGTAACGACTTATACTGTAAGCTCACTGGGATAACACTTCTTTACCAGCCAATCAACATATAAATTCTGGCGATCTAGTGGAGTTCACTGAAGTTGATGATCGTTGCCAGGATATAATTGAGCGGCCAACAACCCATCCCGTGTAGAAGGCTACGATAAGTGCAAGGGGTTCGGTGTTACAAGTCCTTTACAGGGAACCGGACAGCCCCATTTGGACATCTTTAACTCCTTGGGGCCGGAAGTTCGCCTTGGGCCTATCCCCGTGCTAAGTGGCATGTAGGTGTTGGATATAAAAGAAGCCCCAGTTTGAATATCCAGATCCGAGTGGGGATCAGCAGATCGTTATGCGTACTTATGAAGTGATATCCTCTGCGGACATTAAACCGTGATCTCGGTATGTGTCGTCCCCAGGCACGCCGGGCGTAGTGGCCGAACGGCCTAGTGTTCACGAGACATCCTGGGCAGTTGAGGTTGGCTTCTCGGAATTGCTTGGTGCATCAATTTACAAGGAATTCCCTCTAAGTTGTAGGACTTGGCGACTAACAGCAAGTTTCAGGATCTGAAAACTGTCGCCCTCCATGACTCAGGACCCCACACGCGTCGCCATCGCAATCATCAGAGATACTGTGTTGGTCGACATCCGAGAGTGAGATATCCAATGCTTTGCCCGATACCACGGAACCAAATGAGACGGCACAGACACGCGAGGCCATGAAGCGGGAAAAGTCTCGCAGAATAGAGTGAAAAATGATCTCAGACCCTAGGTGAAACTTTGGGGCTCTCATATCCCGGGGAACCCGGTCGCTGGAACAGGGAACATAGCTTCCCTGGTCTGTGCGGTTATCGTCTGGGTATCCTCCCTTCGCCTTCATTCAAGTTGAGCACTGAAGCGTAATGACTGGCAACCCCGGCATAGAAAAAAACTCCTCGGTGTTGTGTTTAGAGGATCGTATGAGCCCTTTCCACTGAATTTCATGCTCCGGGCTGCACCTTTGCCTGCGCGCTGGGGACATGACACTAGACATCCCCGTGCCCTACGGTATACCGAATGGATAGAGGCGACCTTCTCTGAAACTTTAATCGGAATCGGCTTACTAGCATTGTCGATCTGAAAAGTTGCATATCAGGGAAACGCTGATGATCGAGGGGGGGAGGCTGTAGGACCGAGAAAGTATTACTGGGTGTTCGGGGGGTTAAGATGCGTGGCCCCGCTTGTGCCGCCTAACGCGACTCCTTGCTTCTAGAGCCGGTCGGCCCATACTCCGAAAATAACTCGCTCGGCTGTACCAACCTGTACAGAAATGAATCGGATGTAGCCGGTCAGTGGACATCGTTGCTCTCCAGCGGATACATCTGTTAACCAACTGTAGGATCTCTGAGCCAATGAGCTGGTCGCCCGGCACCACGCGTCGCGTGGTCTGGTCATTTGGCTTCCAAAGGACAGCGACGTTATCATCCTTAGCTTGCCTATCACACTCTCTAAGGATCTCTTACGGCCAAATCTCCTGAGCGAGGTATAAGCTTTCTATAGTTCGTGATCTCGGAGGAGTATGACCGAAGTGATTAAGAGTTTACTGGATCAACGACGGCACTGCATGTAACCCCCTATTGAGGTCGACGATTTCATCACTCTATGAGTACATCGTCCGCACGGGCACCTGTGTCCTACGTACTCCGTTTCGACCCTTGACGTACGTGTTACCCACGCAATTCCGGTAAGCATCTTCCTTACACTCATCTCGAGAGGCCGTTAATAAGGGTGTTGTTCTAGTCTGCTAGAGCGGCTGCCAATTTGCTGACTGGACAGCAAGTTTACCGGATACCAATAACTGGGAGAATAGAATCGTAAAAAGCCTATTTAACAAGTTGAAGTTTTTGCTGGGAGGTCCGGATGAGGCGTTAGTTGCAGACCTAGATAAATACGGACCAATTTGGGACAATCGATGTATCGTAGTTTAGACTAGGCCCGTCAAGTTGCGGTGCTCGAGGAGAGAGTACGTGCAGCCCCTTTGCATACGGAGAAGATGCCCCTTTAACTCGACGCCTGCATGATACTCGTGTTCTGTGCCTATATCTGGCAATTCCCGCCTCAATTCACATATCTCGAGTGGTGCACACTCCATTTAAGCCAGATTAGCTCTAACCCTTTGGGAGGCTGCAGAAGAGGGCGTTATGTCTAGTAGGAGCATTTT"
+peptide = "TAQTREAM"
+"""
 print(peptide_encoding_problem(dna, peptide, rna_codon_table_array))
-
-"""
-#Sample output:
-ATGGCC
-GGCCAT
-ATGGCC
-"""
-#rna_5_3 AUGGCCAUGGCCCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA
-#rna_3_5 UCACCCGUUAAUACGGGUACUAUUGAUCUCAGUUCUGGGGGCCAUGGCCAU
 

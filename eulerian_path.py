@@ -88,7 +88,7 @@ def find_eulerian_cycle(my_list):
     for vert in circuit[::-1]:
         path += (vert + '->')
     return path.strip('->')
-
+"""
 my_list = [
     "1 -> 2,3,5",
     "2 -> 1,4",
@@ -96,7 +96,7 @@ my_list = [
     "4 -> 1,2,5",
     "5 -> 3,4"
 ]
-
+"""
 """
 my_list = [
     "0 -> 2",
@@ -108,7 +108,7 @@ my_list = [
      "8 -> 9",
      "9 -> 6"]
 """
-"""
+
 my_list = [
     "CGT|ATG -> GTG|TGT",
     "GAG|TTG -> AGA|TGA",
@@ -120,7 +120,7 @@ my_list = [
     "TGA|GTT -> GAG|TTG",
     "TGG|TGA -> GGT|GAG"
 ]
-"""
+
 """
 data = []
 for line in sys.stdin:
